@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>canvas练习</title>
+</head>
+<body>
+	<canvas id="canvas" width="1024" height="768" style="border:1px solid red;"></canvas>
+	
+	<script>
+		window.onload = function(){
+			var canvas = document.getElementById('canvas');
+			var context = canvas.getContext('2d');
+			context.fillStyle = '#eeeeff';
+			context.fillRect(0,0,400,300);
+
+			// context.fillStyle = 'red';
+			// context.strokeStyle = 'blue';
+			
+			// context.lineWidth = 1;
+			// context.fillRect(200,200,100,100);
+			// context.strokeRect(200,200,100,100);
+			// context.clearRect(200,200,50,100);
+
+			//绘制圆形
+			// for(var i=0;i<10;i++){
+			// 	context.beginPath();
+			// 	context.arc(i*25,i*25,i*10,0,2*Math.PI,true);
+			// 	context.closePath();
+			// 	context.fillStyle = 'rgba(255,0,0,0.25)';
+			// 	context.fill();
+			// }
+
+			var dx = 150;
+			var dy = 150;
+			var s = 100;
+			context.beginPath();
+			context.fillStyle = 'rgb(100,25,100)';
+			context.strokeStyle = 'rgb(0,0,100)';
+			var x = Math.sin(0);
+			var y = Math.cos(0);
+			var dig = Math.PI/15*11;
+			for(var i=0;i<30;i++){
+				var x = Math.sin(i*dig);
+				var y = Math.cos(i*dig);
+				context.lineTo(dx+x*s,dy+y*s);
+			}
+			context.closePath();
+			context.fill();
+			context.stroke();
+		}
+
+	</script>
+</body>
+</html>
