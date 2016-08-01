@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>canvas练习2</title>
+	<style>
+		*{
+			padding: 0;
+			margin:0;
+		}
+
+	</style>
+	<script>
+	window.onload = function(){
+		var canvas = document.getElementById("canvas");
+		canvas.width = 1200;
+		canvas.height = 768;
+		var context = canvas.getContext("2d");
+		// context.lineWidth = 10;
+		
+		// context.moveTo(100, 100);
+		// context.lineTo(500,300);
+		// context.beginPath();
+		// context.moveTo(100, 100);
+		// context.lineTo(300,300);
+		// context.lineTo(100,500);
+		// context.strokeStyle = "red";
+		// context.stroke();
+
+		// context.beginPath();
+		// context.moveTo(400, 100);
+		// context.lineTo(600,300);
+		// context.lineTo(400,500);
+		// context.strokeStyle = "green";
+		// context.stroke();
+
+		// context.beginPath();
+		// context.moveTo(600, 100);
+		// context.lineTo(800,300);
+		// context.lineTo(600,500);
+
+		// context.strokeStyle = "#058";
+		// context.stroke();
+		context.beginPath();
+		context.moveTo(100,100);
+		context.lineTo(400,100);
+		context.lineTo(400,0);
+		context.lineTo(550,125);
+		context.lineTo(400,250);
+		context.lineTo(400,150);
+		context.lineTo(100,150);
+		// context.lineTo(100,100);
+		context.closePath();
+
+		context.lineWidth = 10;
+		context.fillStyle = "yellow";
+		context.fill();
+		context.strokeStyle = "#058";
+		context.stroke();
+
+		drawBlock(context,100,300,400,400,10,'green','yellow');
+		drawRect(context,600,300,400,400,10,'#058','yellow');
+
+	}
+	function drawBlock(cxt,x,y,width,height,borderWidth,lineColor,lineBj){
+		cxt.beginPath();
+		// cxt.moveTo(x,y);
+		// cxt.lineTo(x+width,y);
+		// cxt.lineTo(x+width,y+height);
+		// cxt.lineTo(x,y+height);
+		cxt.rect(x,y,width,height);
+		cxt.closePath();
+		cxt.liheWidth = borderWidth;
+		cxt.lineStyle = lineColor;
+		cxt.fillStyle = lineBj;
+		cxt.fill();
+		cxt.stroke();
+	}
+
+	function drawRect(cxt,x,y,width,height,borderWidth,lineColor,lineBj){
+		cxt.fillStyle = lineBj;
+		cxt.lineWidth = borderWidth;
+		cxt.lineStyle = lineColor;
+		cxt.fillRect(x,y,width,height);
+		cxt.strokeRect(x,y,width,height);
+	}
+
+	</script>
+</head>
+<body>
+	<canvas id="canvas" style="border:1px solid gray;display:block;margin:0 auto"></canvas>
+</body>
+</html>
