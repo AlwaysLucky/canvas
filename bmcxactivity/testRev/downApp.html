@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+		<script src="dist/js/rem-2fbab027fa.js" type="text/javascript" charset="utf-8"></script>
+		<link rel="stylesheet" type="text/css" href="dist/css/isAndroid-1650d00f55.css"/>
+		<title>拜米租车</title>
+	</head>
+	<body>
+		<img class="rentIcon" src="image/rentIcon.png"/>
+		<div class="rentText">拜米租车</div>
+		<div class="rentText2">
+			点击下方按钮即可下载  <span style="font-weight: bold;">拜米租车APP</span>
+		</div>
+		<a href="javascript:" id="download"><img class="downIcon" src="image/downIcon.png"/></a>
+		<img class="isAndroidIcon" src="image/isAndroidIcon.png"/>
+		<div class="Mask">
+			<img class="guideIcon" src="image/guideIcon.png"/>
+			<div class="MaskTip">点击用浏览器打开</div>
+		</div>
+	</body>
+	<script src="dist/js/zepto-2dd2e0f33e.min.js"></script>
+	<script type="text/javascript">
+		$(function(){
+			var prevUrl = document.referrer;
+			$(".downIcon").on('click',function(){
+				var ua = navigator.userAgent.toLowerCase();
+				if(ua.match(/MicroMessenger/i)=="micromessenger") {
+					$(".Mask").show();
+			    } else {
+					$('#download').prop('href', 'https://sj.qq.com/myapp/detail.htm?apkName=cn.bm.shareelbmcx');
+			    }
+			})
+			$(".Mask").on("click",function(){
+				$(".Mask").hide();
+			})
+			console.log(prevUrl);
+		})
+	</script>
+</html>

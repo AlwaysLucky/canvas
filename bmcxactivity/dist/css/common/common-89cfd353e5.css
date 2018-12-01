@@ -1,0 +1,59 @@
+* {
+    padding: 0;
+    margin: 0;
+}
+
+body {
+    font-family: "PingFang SC", "Helvetica Neue", STHeiti, "Microsoft Yahei", Tahoma, Simsun, sans-serif;
+    user-select: none;
+}
+
+a {
+    text-decoration: none;
+}
+
+div,
+input {
+    box-sizing: border-box;
+}
+
+.clearfix {
+    content: '';
+    display: table;
+    clear: both;
+}
+
+.center {
+    text-align: center;
+}
+
+.justify:after {
+    content: '';
+    display: inline-table;
+    width: 100%;
+    vertical-align: top;
+}
+
+.btn {
+    display: inline-block;
+    width: 5.26rem;
+    margin-top: 1rem;
+    color: #FF6000;
+    line-height: 1rem;
+    font-size: 0.36rem;
+    background: #fff;
+    border-radius: 4px;
+}
+
+.btn.primary {
+    color: #fff;
+    background: #FF6000;
+}
+
+a.btn:active{
+    -webkit-transform: -webkit-translate(0%, 10%);
+    -moz-transform: -moz-translate(0%, 10%);
+    -ms-transform: -ms-translate(0%, 10%);
+    -o-transform: -o-translate(0%, 10%);
+    transform: translate(0%, 10%);
+}

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <title>拜米租车</title>
+    <script src="dist/js/rem-2fbab027fa.js"></script>
+    <link rel="stylesheet" href="style/normalize.css">
+    <link rel="stylesheet" href="style/common.css">
+    <link rel="stylesheet" href="dist/css/index-a5fbc95c6b.css">
+    <link rel="stylesheet" href="style/animate.css">
+</head>
+
+<body>
+    <div class="container center">
+        <header>
+            <h1>新用户注册完成即可</h1>
+            <p><img src="image/freeride.png" alt="免费骑行" width="70%"></p>
+            <p><img src="image/minutes.png" alt="30分钟" width="22%"></p>
+        </header>
+        <section class="content">
+            <div class="phone">
+                <input type="number" id="phoneNum" placeholder="请输入手机号">
+            </div>
+            <div class="code">
+                <input type="number" id="vcode" placeholder="请输入验证码">
+                <label for="vcode">立即获取</label>
+            </div>
+            <div style="font-size: 0">
+                <a href="javascript:" class="btn" id="next">下一步</a>
+            </div>
+        </section>
+        <p>未满16周岁禁止骑行</p>
+        <aside><a href="description.html">活动说明</a></aside>
+    </div>
+    <div class="dialog-container">
+        <section class="animated bounceInDown">
+            <img src="image/oo.png" alt="icon">
+            <p>抱歉小主，你已是拜米租车的老用户</p>
+            <p>无法参加此活动哦</p>
+            <a href="downApp.html" class="btn" id="downloadApp">立即下载APP骑行</a>
+        </section>
+    </div>
+    <div id="loadimg" style="display: none">
+    	<img data-src="image/downIcon.png">
+    	<img data-src="image/guideIcon.png">
+    	<img data-src="image/isAndroidIcon.png">
+    	<img data-src="image/notice.png">
+    	<img data-src="image/park.png">
+    	<img data-src="image/pos.png">
+    	<img data-src="image/rentIcon.png">
+    	<img data-src="image/returncar.png">
+    	<img data-src="image/ridecard1.png">
+    </div>
+    <script src="dist/js/zepto-2dd2e0f33e.min.js"></script>
+    <script>
+    "use strict";
+    var flag = false;
+    $(function() {
+        // 打开提示框
+        document.querySelector('#next').onclick = function() {
+            checkNext()
+        }
+        // 获取验证码
+        document.querySelector('label[for=vcode]').onclick = function() {
+            if (flag) return; // 阻止重复点击
+            if (!checkPhone($("#phoneNum").val())) return;
+            $.ajax({
+                url: 'http://apibeta.baimicx.com/bmtravel/api/user/H5sendCode',
+                type: 'post',
+                data:{
+                    mobile: $("#phoneNum").val()
+                },
+                dataType: 'json',
+                success: function(res) {
+                    if (res.success == false) {
+                        alert(res.errorMsg);
+                    }else{
+                        getvCode(60);
+                    }
+                },
+                error: function() {
+                    alert('网路异常');
+                }
+            })
+        }
+        window.loadImages();
+    })
+
+    function showDialog() {
+        let dialog = document.querySelector('.dialog-container');
+        dialog.style.display = 'block';
+    }
+
+    function getvCode(seconds) {
+        flag = true;
+        seconds = seconds - 1;
+        document.querySelector('label[for=vcode]').textContent = seconds + 's';
+        if (seconds < 0) {
+            flag = false;
+            clearTimeout(time);
+            document.querySelector('label[for=vcode]').textContent = "重新获取";
+            return;
+        }
+        var time = setTimeout(function() {
+            getvCode(seconds--);
+        }, 1000);
+    }
+
+    function checkNext() {
+        var ptnvCode = /^\d{4}$/;
+        var vcode = $("#vcode").val();
+        var phoneNum = $("#phoneNum").val();
+        if (!checkPhone(phoneNum)) {
+            return;
+        }
+        if ( !ptnvCode.test(vcode.trim()) || vcode.trim() == '' ) {
+            alert('验证码格式不正确');
+            return;
+        }
+
+        $.ajax({
+            // url: 'script/user.json',
+            url: 'http://apibeta.baimicx.com/bmtravel/api/temporaryUserRegister/nextConfirm',
+            type: 'post',
+            data:{
+                phoneNumber: phoneNum,
+                mCode: vcode
+            },
+            dataType: 'json',
+            success: function(res) {
+                if (res.success) {
+                    // sessionStorage.setItem('userInfo', JSON.stringify(res[phoneNum]) || '{"phone":'+phoneNum+'}');
+                    sessionStorage.setItem('userInfo', JSON.stringify(res));
+                    relations(res);
+                }else{
+                    alert(res.errorMsg);
+                }
+            },
+            error: function() {
+                alert('网路异常');
+            }
+        })
+    }
+
+    function checkPhone(phone){
+        var ptnPhone = /^1[3,4,5,6,7,8,9]\d{9}$/;
+        if ( !ptnPhone.test(phone.trim()) || phone.trim() == '') {
+            alert('手机号格式不正确');
+            return;
+        }
+        return true;
+    }
+
+    function relations(data) {
+
+        if (data.result == 1) {
+            /*未注册*/
+            window.location.href = 'authen.html';
+        }
+        if (data.result == 2) {
+            /*注册过未实名认证*/
+            window.location.href = 'authen.html';
+        }
+
+        if (data.result == 3) {
+            /*注册过未实名认证*/
+            window.location.href = 'ride.html';
+        }
+
+
+
+
+        // if (data) {
+        //     if (data.isRes) {
+        //         /* 已注册 */
+        //         if (data.isHaveTicet) {
+        //             /* 已领优惠券 */
+        //             if (data.isDownApp) {
+        //                 /* 已下载APP */
+        //             } else {
+        //                 /* 未下载APP */
+        //                 showDialog();
+        //             }
+        //         } else {
+        //             /* 未领优惠券 */
+        //             if (data.isAut) {
+        //             	/* 已实名 */
+        //             	window.location.href = 'ride.html';
+        //             }else{
+        //             	/* 未实名 */
+			     //        window.location.href = 'authen.html';
+        //             }
+        //         }
+        //     }else{
+	       //      /* 未注册 */
+	       //      window.location.href = 'authen.html';
+        //     }
+        // } else {
+        //     window.location.href = 'authen.html';
+        // }
+    }
+
+    // 预加载后续图片
+    function loadImages(){
+    	let images = document.querySelectorAll('#loadimg img');
+    	Array.prototype.forEach.call(images, function(el, i) {
+    	    var imgSrc = el.dataset.src;
+    	    el.src = imgSrc;
+    	})
+    }
+    </script>
+</body>
+
+</html>

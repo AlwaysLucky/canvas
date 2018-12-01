@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no" />
+    <script src="js/rem-2fbab027fa.js"></script>
+    <link rel="stylesheet" href="css/common/sweetalert2-c318501eb5.min.css">
+    <link rel="stylesheet" href="css/common/common-1fd8ec4547.css">
+    <link rel="stylesheet" type="text/css" href="css/isAndroid-1650d00f55.css" />
+    <title>拜米租车</title>
+</head>
+
+<body>
+    <img class="rentIcon" src="image/rentIcon.png"/>
+    <div class="rentText">拜米租车</div>
+    <div class="rentText2">
+        点击下方按钮即可下载 <span style="font-weight: bold;">拜米租车APP</span>
+    </div>
+    <a href="javascript:" id="download"><img class="downIcon" src="image/downIcon.png"/></a>
+    <img class="isAndroidIcon" src="image/isAndroidIcon.png"/>
+    <div class="Mask">
+        <img class="guideIcon" src="image/guideIcon.png"/>
+        <div class="MaskTip">点击用浏览器打开</div>
+    </div>
+</body>
+<script src="js/zepto-2dd2e0f33e.min.js"></script>
+<script src="js/sweetalert2-6ac9d9500f.min.js"></script>
+<script type="text/javascript">
+$(function() {
+    var url = undefined;
+    $.ajax({
+        url: 'http://apibeta.baimicx.com/bmtravel/api/temporaryUserRegister/downAndroid',
+        type: 'post',
+        data: {},
+        dataType: 'json',
+        success: function(res) {
+            url = res;
+        },
+        error: function() {
+            url = 'http://apit.baimicx.com/resource/apk/userapp/app-user-v2_2.apk';
+        }
+    })
+
+    $(".downIcon").on('click', function() {
+        var ua = navigator.userAgent.toLowerCase();
+        if (ua.match(/MicroMessenger/i) == "micromessenger") {
+            $(".Mask").show();
+        } else {
+            window.location.href = 'cn.bm.shareelbmcx://bmcx.app/openwith';
+            swal({
+                title: '正在下载',
+                timer: 2000,
+                onOpen: () => {
+                    swal.showLoading()
+                }
+            })
+            setTimeout(function() {
+                window.location.href = url;
+            }, 2000)
+        }
+    })
+    $(".Mask").on("click", function() {
+        $(".Mask").hide();
+    })
+    
+})
+</script>
+
+</html>

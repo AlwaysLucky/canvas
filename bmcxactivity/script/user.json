@@ -1,0 +1,35 @@
+{
+	"13111111111":{
+		"phone": 13111111111,
+		"isRes": false,
+		"isAut": false,
+		"isStationIn": false
+	},
+	"13111111112":{
+		"phone": 13111111112,
+		"isRes": false,
+		"isAut": false,
+		"isStationIn": true
+	},
+	"13122222221":{
+		"phone": 13122222221,
+		"isRes": true,
+		"isAut": false,
+		"isHaveTicet": true,
+		"isDownApp": false
+	},
+	"13122222222":{
+		"phone": 13122222222,
+		"isRes": true,
+		"isAut": false,
+		"isHaveTicet": false,
+		"isDownApp": false
+	},
+	"13122222223":{
+		"phone": 13122222223,
+		"isRes": true,
+		"isAut": true,
+		"isHaveTicet": false,
+		"isDownApp": false
+	}
+}
