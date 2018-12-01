@@ -152,6 +152,9 @@
                 mCode: vcode
             },
             dataType: 'json',
+		headers:{
+			'Access-Control-Allow-Origin': '*'
+		},
             success: function(res) {
                 if (res.success) {
                     localStorage.setItem('mobile', phoneNum);
