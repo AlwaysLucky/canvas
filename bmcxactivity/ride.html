@@ -1,0 +1,356 @@
+<!doctype html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+    <title>拜米租车</title>
+    <script src="script/rem.js"></script>
+    <link rel="stylesheet" href="style/normalize.css">
+    <link rel="stylesheet" href="style/sweetalert2.min.css">
+    <link rel="stylesheet" href="style/animate.css">
+    <link rel="stylesheet" href="style/common.css">
+    <link rel="stylesheet" href="style/css/ride.css">
+    <style>
+        .amap-geolocation-con .amap-geo{
+            background: url(image/pos.png) 50% 50% no-repeat;
+            border-radius: 0;
+            border: 0 none;
+        }
+        .amap-marker-content>div{
+            overflow: visible!important;
+        }
+        .tada{
+            animation-duration: 1.5s;
+            animation-delay: 1s;
+            animation-iteration-count: infinite;
+        }
+        .btn.primary.disable{
+            background: #afa9a5
+        }
+    </style>
+</head>
+
+<body>
+    <div id='container'></div>
+    <div class="info">
+        <p>您的免费骑行剩余时间： <span class="resttime"></span></p>
+        <p><img src="image/notice.png" alt="提示">骑行结束后请到附近站点还车，以免影响下次使用!</p>
+    </div>
+    <footer class="center">
+        <a href="javascript:" class="btn primary disable">开锁用车</a>
+    </footer>
+    <div class="open-lock">
+        <div class="opener">
+            <div class="circle">
+                <p>0%</p>
+                <p>正在开锁中</p>
+                <canvas id="canvas"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="returnCar" id="rtnCar">
+        <img src="image/returncar.png" alt="执意还车">
+    </div>
+        <div class="remind center">
+            <div class="content animated bounceInDown">
+                <p>为了不影响您以后的骑行</p>
+                <p>请您按路线指引到最近站点还车</p>
+                <div class="buttons justify">
+                    <a href="javascript:" class="btn" id="rtnCarNo">执意还车</a>
+                    <a href="javascript:" class="btn" id="rtnCarYes">站点还车</a>
+                </div>
+            </div>
+        </div>
+        <div class="dialog-container">
+            <section class="animated bounceInDown">
+                <img src="image/ridecard1.png" alt="券">
+                <p>感谢小主的支持！您的账户额外获得</p>
+                <p><img src="image/ridecard.png" alt="免费骑行券" class="animated tada"></p>
+                    <script>
+                    if (/(iPhone|iPad|iPod|iOS)/i.test(navigator.userAgent)) { //判断iPhone|iPad|iPod|iOS
+                        document.write('<a href="https://sj.qq.com/myapp/detail.htm?apkName=cn.bm.shareelbmcx" class="btn" id="downloadApp">立即下载APP领取</a>');
+                    } else {
+                        document.write('<a href="downApp.html" class="btn" id="downloadApp">立即下载APP领取</a>');
+                    }
+                    </script>
+            </section>
+        </div>
+        <script src="script/zepto.min.js"></script>
+        <script src="https://webapi.amap.com/maps?v=1.4.10&key=99193396673e245054ddbbe718f4f1df&plugin=AMap.Riding"></script>
+        <script src="script/sweetalert2.min.js"></script>
+        <script type="text/javascript">
+        "use strict";
+        var geolocation;
+        var canvas = document.querySelector('#canvas');
+        var ctx = canvas.getContext("2d");
+        var width = canvas.width = 150;
+        var height = canvas.height = 150;
+        var centerx = width / 2;
+        var speed = 0;
+        var time; // 定时器
+        var position = {}; //实时位置
+        var openLockTime = parseInt(localStorage.getItem('openLockTime')) || ''; // 开锁成功时间
+        // var totalseconds = 1800000;  30分钟毫秒数  30*60*1000
+        var totalseconds = 2 * 60 * 1000;
+        var map = new AMap.Map('container', {
+            resizeEnable: true,
+            zoom: 17
+        });
+        (function() {
+
+            /*是否中途退出 根据开锁成功时间是否被清楚来判断*/
+
+            if (openLockTime) {
+                $(".info p").show();
+                window.restTime();
+            }
+
+            /*骑行路线*/
+            var riding = new AMap.Riding({
+                map: map,
+                autoFitView: true,
+                hideMarkers: true
+            });
+            var infoWindow = new AMap.InfoWindow({
+                isCustom: true, //使用自定义窗体
+                content: '<div style="poistion: relative"><label style="background: white; padding: 4px 6px;font-weight:bold;font-size: 0.32rem">站点</label><span style="position:absolute;border: 10px solid;border-color:white transparent transparent;left:50%;bottom:-14px;transform:translateX(-50%)"></span></div>',
+                offset: new AMap.Pixel(0, -30)
+            });
+            AMap.plugin('AMap.Geolocation', function() {
+                geolocation = new AMap.Geolocation({
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    buttonPosition: 'RB',
+                    buttonOffset: new AMap.Pixel(10, 150),
+                    zoomToAccuracy: true,
+                    showCircle: false
+                });
+                map.addControl(geolocation);
+                geolocation.getCurrentPosition(function(status, result) {
+                    if (status == 'complete') {
+                        onComplete(result);
+                    } else {
+                        onError(result);
+                    }
+                });
+                setInterval(function(){
+                    geolocation.getCurrentPosition(function(status, result) {
+                        if (status == 'complete') {
+                            onComplete(result);
+                        } else {
+                            onError(result);
+                        }
+                    });
+                }, 6000)
+            });
+            // var markList = [
+            //     [121.385658, 31.116765],
+            //     [121.387154, 31.116889],
+            //     [121.385803, 31.116012]
+            // ];
+            // markList.forEach(function(arr, index) {
+            //     let marker = new AMap.Marker({
+            //         position: arr,
+            //         icon: 'image/park.png'   
+            //     })
+            //     map.add(marker);
+            //     AMap.event.addListener(marker, 'click', function(e) {
+            //         infoWindow.open(map, marker.getPosition());
+            //     });
+            // })
+
+            AMap.event.addListener(map, 'click', function(e) {
+                infoWindow.close();
+            });
+        })();
+        (function() {
+            document.querySelector('#rtnCar').addEventListener('click', function() {
+                document.querySelector('.remind').style.display = 'block';
+            })
+            document.querySelector('#rtnCarYes').addEventListener('click', function() {
+                document.querySelector('.remind').style.display = 'none';
+            })
+        })();
+
+        function drawCircle(x, y, strokeColor, r, speed) {
+            ctx.save();
+            ctx.beginPath();
+            var rad = 2 * Math.PI / 100 * speed;
+            ctx.strokeStyle = strokeColor;
+            ctx.lineCap = 'round';
+            ctx.lineWidth = 10;
+            ctx.arc(x, y, r, 0, rad);
+            ctx.stroke();
+            ctx.restore();
+        }
+
+        function draw(action) {
+            ctx.clearRect(0, 0, width, height);
+            speed += 1;
+            document.querySelector('.circle>p').textContent = Math.ceil(speed) + '%';
+            drawCircle(centerx, centerx, '#FF6600', 70, speed);
+            ctx.restore();
+            if (speed == 100) {
+                /*开锁超时*/
+                speed = 0;
+                clearInterval(time);
+                document.querySelector('.open-lock').style.display = 'none';
+                if (action == 'open') {
+                    console.log('开锁超时');
+                }
+                if (action == 'close') {
+                    /* 关锁成功 暂时模拟*/
+                    localStorage.clear();
+                    showDialog();
+                }
+            }
+        }
+
+        function restTime() {
+            let usetime = new Date().getTime() - openLockTime;
+            let restSeconds = Math.floor((totalseconds - usetime) / 1000 % 60);
+            let restMinutes = Math.floor((totalseconds - usetime) / 1000 / 60);
+            if (restSeconds < 10) { restSeconds = '0' + restSeconds }
+            let html = restMinutes + ":" + restSeconds;
+            $(".resttime").html(html);
+            let ts = setTimeout(restTime, 1000);
+            if (restMinutes < 0) {
+                clearTimeout(ts);
+                $(".resttime").html("0:00");
+            }
+        }
+
+        function openLockOk(flag) {
+            speed = 0;
+            clearInterval(time);
+            document.querySelector('.open-lock').style.display = 'none';
+            if (flag == 'ok') {
+                $(".primary").text('关锁还车').addClass("close");
+                $(".circle>p+p").text('正在关锁中');
+                $(".info p").show();
+                openLockTime = new Date().getTime();
+                localStorage.setItem('openLockTime', openLockTime);
+                restTime();
+            }
+        }
+
+        function showDialog() {
+            let dialog = document.querySelector('.dialog-container');
+            dialog.style.display = 'block';
+        }
+        //解析定位结果
+        function onComplete(data) {
+            /* 开锁/关锁 */
+            $(".disable").removeClass('disable');
+            position = {
+                "lng": data.position.lng,
+                "lat": data.position.lat
+            }
+        }
+        //解析定位错误信息
+        function onError(data) {
+            swal({
+                title: '定位失败',
+                text: data.message,
+                timer: 1500
+            });
+        }
+        document.querySelector('.primary').addEventListener('click', clickEvent);
+        function clickEvent(){
+            if ($.isEmptyObject(position)) return;
+            let action = $(this).hasClass('close') ? 'close' : 'open';
+            if (action == 'close') {
+                map.setFitView();
+                // 暂时模拟站内/站外
+                if (false) {
+                    /* 站内 */
+                    document.querySelector('.open-lock').style.display = 'block';
+                    time = setInterval('draw('+action+')', 50);
+                } else {
+                    /* 站外 */
+                    $('.returnCar').show();
+                    riding.search([position.lng, position.lat], [121.385658, 31.116765], function(status, result) {
+                        if (status === 'complete') {
+                            console.log('绘制骑行路线完成')
+                        } else {
+                            console.log('骑行路线数据查询失败' + result)
+                        }
+                    });
+                    /* 执意还车 */
+                    document.querySelector('#rtnCarNo').addEventListener('click', function() {
+                        $('.remind').hide();
+                        $('.open-lock').show();
+                        time = setInterval('draw('+action+')', 50);
+                        let url  = 'http://apibeta.baimicx.com/bmtravel/api/zeroDeviceOperation/force';
+                        let word = '请重新关锁';
+                        window.lockOperate(url, position, word);
+                    })
+                }
+            } else {
+                /*开锁*/
+                document.querySelector('.open-lock').style.display = 'block';
+                time = setInterval('draw('+action+')', 50);
+                let url  = 'http://apibeta.baimicx.com/bmtravel/api/zeroDeviceOperation/zeroScan';
+                let word = '请重新开锁';
+                window.lockOperate(url, position, word);
+            }
+        }
+        /*
+            开锁/强制关锁接口封装
+            url: 请求地址
+            data: 定位成功result对象
+            warnTxt: 提示文本
+        */
+        function lockOperate(url,data,warnTxt){
+            $.ajax({
+                url: url,
+                type: 'post',
+                data: {
+                    mobile: localStorage.getItem('mobile'),
+                    lng: position.lng,
+                    lat: position.lat,
+                    deviceCode: '12100256',
+                    operateType: 0
+                },
+                dataType: 'json',
+                timeout: 5000,
+                success: function(res) {
+                    if (res.success) {
+                        window.openLockOk('ok');
+                    } else {
+                        window.openLockOk('no');
+                        swal({
+                            text: res.errorMsg,
+                            showConfirmButton: false,
+                            timer: 1500
+                        })
+                    }
+                },
+                complete: function(XMLHttpRequest, status) {
+                    if (status == 'timeout') {
+                        /*响应超时*/
+                        window.openLockOk('no');
+                        swal({
+                            text: warnTxt,
+                            showConfirmButton: false,
+                            timer: 1000
+                        })
+                    }
+                },
+                error: function(res) {
+                    swal({
+                        text: '网络异常',
+                        showConfirmButton: false,
+                        timer: 1000
+                    });
+                }
+            })
+        }
+
+        </script>
+</body>
+
+</html>
